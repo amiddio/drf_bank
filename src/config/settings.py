@@ -15,6 +15,7 @@ import os
 
 from pathlib import Path
 
+
 env = environ.Env(
     DEBUG=(bool, False)
 )
@@ -35,7 +36,6 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -51,6 +51,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+
+    # Local Apps
+    'account.apps.AccountConfig',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +86,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -93,7 +95,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -113,7 +114,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -124,7 +124,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -148,6 +147,10 @@ REST_FRAMEWORK = {
 # Djoser settings
 DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': True,
+    'SERIALIZERS': {
+        'current_user': 'account.serializers.CustomUserSerializer',
+        'user_create_password_retype': 'account.serializers.CustomUserCreatePasswordRetypeSerializer',
+    },
 }
 
 # Celery settings
