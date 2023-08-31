@@ -50,6 +50,9 @@ class CustomUserCreatePasswordRetypeSerializer(UserCreatePasswordRetypeSerialize
     Необходимо при создании пользователя передавать дополнительные поля.
     """
 
+    first_name = serializers.CharField(max_length=150, required=True)
+    last_name = serializers.CharField(max_length=150, required=True)
+    email = serializers.EmailField(required=True)
     account_type = serializers.IntegerField(write_only=True)
     gender = serializers.CharField(write_only=True, min_length=1, max_length=1)
 
@@ -59,10 +62,10 @@ class CustomUserCreatePasswordRetypeSerializer(UserCreatePasswordRetypeSerialize
             'id', 'username', 'password', 'first_name', 'last_name', 'email', 'account_type', 'gender'
         )
 
-    def validate(self, data):
-        self.account_type = data.pop('account_type', None)
-        self.gender = data.pop('gender', None)
-        return super().validate(data)
+    def validate(self, attrs):
+        self.account_type = attrs.pop('account_type', None)
+        self.gender = attrs.pop('gender', None)
+        return super().validate(attrs)
 
     def create(self, validated_data):
         try:
