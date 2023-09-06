@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
     # Local Apps
     'account.apps.AccountConfig',
+    'bank.apps.BankConfig',
 ]
 
 MIDDLEWARE = [
