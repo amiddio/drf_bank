@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from bank.models import Account
-from bank.serializers import AccountSerializer, TransferFromSerializer, TransferToSerializer
+from bank.serializers import AccountSerializer, TransferSerializer
 from bank.services.account_service import AccountService
 from bank.tasks import money_transfer_task
 
@@ -61,15 +61,14 @@ class TransferAPIView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        serializer_from = TransferFromSerializer(data=request.data, context={'request': request})
-        serializer_to = TransferToSerializer(data=request.data)
-        serializer_from.is_valid(raise_exception=True)
-        serializer_to.is_valid(raise_exception=True)
+        serializer = TransferSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
 
+        # Money transfer task
         money_transfer_task.delay(
-            account_from=serializer_from.data.get('account_from'),
-            account_to=serializer_to.data.get('account_to'),
-            amount=serializer_from.data.get('amount')
+            account_from=serializer.data.get('account_from'),
+            account_to=serializer.data.get('account_to'),
+            amount=serializer.data.get('amount')
         )
 
         return Response({'result': True}, status=status.HTTP_200_OK)

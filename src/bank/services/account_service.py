@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
@@ -24,6 +26,14 @@ class AccountService:
         if account.amount > 0:
             raise Exception("Unable to delete. There is money in the account.")
         account.delete()
+
+    @staticmethod
+    def calculate_commission(account_from: Account, account_to: Account, amount: Decimal) -> Decimal:
+        if account_from.user == account_to.user:
+            return Decimal(0)
+        bank_commission_value = account_from.user.profile.account_type.commission
+        commission = (Decimal(amount) / Decimal(100)) * Decimal(bank_commission_value)
+        return commission.quantize(Decimal('0.00'))
 
     @staticmethod
     def generate_account_number(user: User) -> str:

@@ -9,6 +9,7 @@ class AccountType(models.Model):
     """
 
     name = models.CharField(max_length=50)
+    commission = models.FloatField(default=0)
 
     class Meta:
         ordering = ['name']

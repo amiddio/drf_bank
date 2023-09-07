@@ -7,7 +7,7 @@ from account.models import AccountType, Profile
 
 @admin.register(AccountType)
 class AccountTypeAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'commission')
 
 
 class ProfileInline(admin.StackedInline):

@@ -10,28 +10,25 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class TransferFromSerializer(serializers.Serializer):
+class TransferSerializer(serializers.Serializer):
     account_from = serializers.CharField(max_length=Account.ACCOUNT_LENGTH)
+    account_to = serializers.CharField(max_length=Account.ACCOUNT_LENGTH)
     amount = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def validate(self, data):
-        account = AccountService.get_by_account_name(name=data.get('account_from'))
-        if not account:
+        account_from = AccountService.get_by_account_name(name=data.get('account_from'))
+        account_to = AccountService.get_by_account_name(name=data.get('account_to'))
+        commission = AccountService.calculate_commission(
+            account_from=account_from, account_to=account_to, amount=data.get('amount')
+        )
+        if not account_from:
             raise serializers.ValidationError({'account_from': "Account From not exist"})
-        if account.user.id != self.context['request'].user.id:
+        if not account_to:
+            raise serializers.ValidationError({'account_to': "Account To not exist"})
+        if account_from.user.id != self.context['request'].user.id:
             raise serializers.ValidationError({
                 'account_from': f"This user has not permissions to '{data.get('account_from')}'"
             })
-        if account.amount < data.get('amount'):
+        if account_from.amount < (data.get('amount') + commission):
             raise serializers.ValidationError({'account_from': "There are not enough funds in the account"})
-        return data
-
-
-class TransferToSerializer(serializers.Serializer):
-    account_to = serializers.CharField(max_length=Account.ACCOUNT_LENGTH)
-
-    def validate(self, data):
-        account = AccountService.get_by_account_name(name=data.get('account_to'))
-        if not account:
-            raise serializers.ValidationError({'account_from': "Account From not exist"})
         return data
