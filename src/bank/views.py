@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from bank.models import Account
 from bank.serializers import AccountSerializer, TransferFromSerializer, TransferToSerializer
 from bank.services.account_service import AccountService
+from bank.tasks import money_transfer_task
 
 
 class AccountViewSet(viewsets.ViewSet):
@@ -65,7 +66,10 @@ class TransferAPIView(APIView):
         serializer_from.is_valid(raise_exception=True)
         serializer_to.is_valid(raise_exception=True)
 
-        print(serializer_from.data)
-        print(serializer_to.data)
+        money_transfer_task.delay(
+            account_from=serializer_from.data.get('account_from'),
+            account_to=serializer_to.data.get('account_to'),
+            amount=serializer_from.data.get('amount')
+        )
 
         return Response({'result': True}, status=status.HTTP_200_OK)
