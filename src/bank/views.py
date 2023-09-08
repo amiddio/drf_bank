@@ -6,11 +6,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bank.models import Account
-from bank.serializers import AccountSerializer, TransferSerializer, TransferHistorySerializer
+from bank.models import Account, Merchant
+from bank.serializers import AccountSerializer, TransferSerializer, TransferHistorySerializer, MerchantSerializer, \
+    PayABillSerializer
 from bank.services.account_service import AccountService
 from bank.services.transfer_history_service import TransferHistoryService
-from bank.tasks import money_transfer_task
+from bank.tasks import money_transfer_task, pay_a_bill_task
 
 
 class AccountViewSet(viewsets.ViewSet):
@@ -75,9 +76,32 @@ class TransferAPIView(APIView):
         return Response({'result': True}, status=status.HTTP_200_OK)
 
 
+class PayABillAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        serializer = PayABillSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        # Pay a bill transfer task
+        pay_a_bill_task.delay(
+            merchant_id=serializer.data.get('merchant_id'),
+            account=serializer.data.get('account'),
+            amount=serializer.data.get('amount')
+        )
+
+        return Response({'result': True}, status=status.HTTP_200_OK)
+
+
 class TransferHistoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = TransferHistorySerializer
 
     def get_queryset(self):
         return TransferHistoryService.get_all(user=self.request.user)
+
+
+class MerchantViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = MerchantSerializer
+    queryset = Merchant.objects.all()

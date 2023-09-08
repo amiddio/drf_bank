@@ -10,7 +10,7 @@ class TransferHistoryService:
         TransferHistory.objects.create(
             action=action,
             account=account.name,
-            account_external=account_external.name,
+            account_external=account_external,
             amount=amount,
             commission=commission,
             user=account.user

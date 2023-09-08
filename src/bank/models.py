@@ -27,7 +27,7 @@ class TransferHistory(models.Model):
     )
     action = models.CharField(max_length=1, choices=ACTION)
     account = models.CharField(max_length=Account.ACCOUNT_LENGTH)
-    account_external = models.CharField(max_length=Account.ACCOUNT_LENGTH)
+    account_external = models.CharField(max_length=50)
     amount = models.CharField(max_length=20)
     commission = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created = models.DateTimeField(auto_now_add=True)
@@ -51,3 +51,13 @@ class CommissionIncome(models.Model):
     def __str__(self):
         return str(self.commission)
 
+
+class Merchant(models.Model):
+    name = models.CharField(max_length=50)
+    commission = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

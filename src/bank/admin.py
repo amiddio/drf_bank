@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from bank.models import CommissionIncome
+from bank.models import CommissionIncome, Merchant
+
+
+@admin.register(Merchant)
+class MerchantAdmin(admin.ModelAdmin):
+    list_display = ('name', 'commission')
 
 
 @admin.register(CommissionIncome)
@@ -17,4 +22,3 @@ class CommissionIncomeAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
-
