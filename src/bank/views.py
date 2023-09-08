@@ -1,14 +1,15 @@
 from decimal import Decimal
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from bank.models import Account
-from bank.serializers import AccountSerializer, TransferSerializer
+from bank.serializers import AccountSerializer, TransferSerializer, TransferHistorySerializer
 from bank.services.account_service import AccountService
+from bank.services.transfer_history_service import TransferHistoryService
 from bank.tasks import money_transfer_task
 
 
@@ -72,3 +73,11 @@ class TransferAPIView(APIView):
         )
 
         return Response({'result': True}, status=status.HTTP_200_OK)
+
+
+class TransferHistoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = TransferHistorySerializer
+
+    def get_queryset(self):
+        return TransferHistoryService.get_all(user=self.request.user)

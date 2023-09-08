@@ -1,12 +1,18 @@
 from rest_framework import serializers
 
-from bank.models import Account
+from bank.models import Account, TransferHistory
 from bank.services.account_service import AccountService
 
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
+        fields = '__all__'
+
+
+class TransferHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TransferHistory
         fields = '__all__'
 
 

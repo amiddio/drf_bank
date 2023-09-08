@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+
 from bank.models import TransferHistory
 
 
@@ -13,3 +15,7 @@ class TransferHistoryService:
             commission=commission,
             user=account.user
         )
+
+    @staticmethod
+    def get_all(user: User) -> list[TransferHistory]:
+        return TransferHistory.objects.filter(user=user)
