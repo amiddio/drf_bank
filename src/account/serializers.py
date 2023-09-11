@@ -7,7 +7,9 @@ from account.models import Profile, AccountType
 
 
 class AccountTypeSerializer(serializers.ModelSerializer):
-    """Сериалайзер типов акаунта"""
+    """
+    Сериалайзер типов акаунта
+    """
 
     class Meta:
         model = AccountType
@@ -15,7 +17,9 @@ class AccountTypeSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    """Сериалайзер профиля пользователя"""
+    """
+    Сериалайзер профиля пользователя
+    """
 
     account_type = AccountTypeSerializer()
     gender_display = serializers.SerializerMethodField()
@@ -31,7 +35,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(UserSerializer):
     """
-    Переопределяем djoser-ий сериалайзер отображения пользователя,
+    Переопределяем djoser-й сериалайзер отображения пользователя,
     для добавления в него дополнительных полей
     """
 
@@ -46,8 +50,8 @@ class CustomUserSerializer(UserSerializer):
 
 class CustomUserCreatePasswordRetypeSerializer(UserCreatePasswordRetypeSerializer):
     """
-    Переопределяем djoser-ий сериалайзер создания пользователя.
-    Необходимо при создании пользователя передавать дополнительные поля.
+    Переопределяем djoser-й сериалайзер создания пользователя.
+    Т.к. необходимо, при создании пользователя, передавать дополнительные поля.
     """
 
     first_name = serializers.CharField(max_length=150, required=True)

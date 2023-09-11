@@ -19,7 +19,9 @@ class AccountType(models.Model):
 
 
 class Profile(models.Model):
-    """Модель Profile расширяет стандартную модель User дополнительными полями"""
+    """
+    Модель Profile расширяет стандартную модель User дополнительными полями
+    """
 
     MALE = 'M'
     FEMALE = 'F'
