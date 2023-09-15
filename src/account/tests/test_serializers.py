@@ -1,10 +1,9 @@
 from collections import OrderedDict
 
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from account.models import AccountType, Profile
+from account.models import AccountType
 from account.serializers import AccountTypeSerializer, ProfileSerializer, CustomUserSerializer, \
     CustomUserCreatePasswordRetypeSerializer
 from config.mixins_test import GeneralTestCaseMixin
@@ -29,10 +28,13 @@ class ProfileSerializerTestCase(GeneralTestCaseMixin, TestCase):
         pass
 
     def test_data_fields(self):
-        profile = Profile.objects.get(pk=1)
+        logged_user = self.get_user_by_username('testuser1')
+        profile = logged_user.profile
+        account_type = profile.account_type
         serializer = ProfileSerializer(profile)
         self.assertEqual(
-            {'gender': 'M', 'gender_display': 'Male', 'account_type': OrderedDict([('id', 1), ('name', 'Personal')])},
+            {'gender': 'M', 'gender_display': 'Male',
+             'account_type': OrderedDict([('id', account_type.pk), ('name', 'Personal')])},
             serializer.data
         )
 
@@ -43,12 +45,12 @@ class CustomUserSerializerTestCase(GeneralTestCaseMixin, TestCase):
         pass
 
     def test_data_fields(self):
-        user = User.objects.get(pk=1)
-        serializer = CustomUserSerializer(user)
+        logged_user = self.get_user_by_username('testuser1')
+        serializer = CustomUserSerializer(logged_user)
         self.assertEqual(
-            {'id': 1, 'username': 'testuser1', 'first_name': 'john', 'last_name': 'dow',
+            {'id': logged_user.pk, 'username': 'testuser1', 'first_name': 'john', 'last_name': 'dow',
              'email': 'testuser1@home.local', 'profile': OrderedDict([('gender', 'M'), ('gender_display', 'Male'), (
-                'account_type', OrderedDict([('id', 1), ('name', 'Personal')]))])},
+                'account_type', OrderedDict([('id', logged_user.pk), ('name', 'Personal')]))])},
             serializer.data
         )
 
@@ -59,9 +61,7 @@ class CustomUserCreatePasswordRetypeSerializerTestCase(GeneralTestCaseMixin, Tes
         pass
 
     def test_data_fields(self):
-        user = User.objects.get(pk=1)
-        user.re_password = '12345'
-        user.password = '12345'
+        account_type = AccountType.objects.all()[0]
         serializer = CustomUserCreatePasswordRetypeSerializer(data={
             'username': 'john_dow',
             'password': 'Qwerty#1234',
@@ -69,7 +69,7 @@ class CustomUserCreatePasswordRetypeSerializerTestCase(GeneralTestCaseMixin, Tes
             'first_name': 'john',
             'last_name': 'dow',
             'email': 'john.dow@home.local',
-            'account_type': 1,
+            'account_type': account_type.pk,
             'gender': 'M',
         })
         serializer.is_valid(raise_exception=True)

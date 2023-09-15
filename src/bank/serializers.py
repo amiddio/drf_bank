@@ -6,24 +6,40 @@ from bank.services.merchant_service import MerchantService
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер банковских аккаунтов пользователей
+    """
+
     class Meta:
         model = Account
         fields = '__all__'
 
 
 class TransferHistorySerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер истории транзакций пользователей
+    """
+
     class Meta:
         model = TransferHistory
         fields = '__all__'
 
 
 class MerchantSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер списка мерчантов
+    """
+
     class Meta:
         model = Merchant
         fields = '__all__'
 
 
 class TransferSerializer(serializers.Serializer):
+    """
+    Сериалайзер денежных переводов
+    """
+
     account_from = serializers.CharField(max_length=Account.ACCOUNT_LENGTH)
     account_to = serializers.CharField(max_length=Account.ACCOUNT_LENGTH)
     amount = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -52,6 +68,10 @@ class TransferSerializer(serializers.Serializer):
 
 
 class PayABillSerializer(serializers.Serializer):
+    """
+    Сериалайзер оплаты счетов
+    """
+
     merchant_id = serializers.IntegerField()
     account = serializers.CharField(max_length=Account.ACCOUNT_LENGTH)
     amount = serializers.DecimalField(max_digits=10, decimal_places=2, default=0)

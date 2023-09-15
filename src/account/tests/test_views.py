@@ -1,9 +1,12 @@
+from collections import OrderedDict
+
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
+from account.models import AccountType
 from config.mixins_test import GeneralTestCaseMixin
 
 
@@ -46,19 +49,22 @@ class UserTestCase(GeneralTestCaseMixin, APITestCase):
         url = reverse('user-me')
         response = self.client.get(url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        logged_user = self.get_user_by_username('testuser1')
         self.assertEqual(
-            {'id': 1, 'username': 'testuser1', 'first_name': 'john', 'last_name': 'dow',
-             'email': 'testuser1@home.local', 'profile': None},
+            {'id': logged_user.pk, 'username': 'testuser1', 'first_name': 'john', 'last_name': 'dow',
+             'email': 'testuser1@home.local', 'profile': OrderedDict([('gender', 'M'), ('gender_display', 'Male'), (
+                'account_type', OrderedDict([('id', logged_user.pk), ('name', 'Personal')]))])},
             response.data
         )
 
     def test_user_update(self):
         self.user_login()
+        logged_user = self.get_user_by_username('testuser1')
         url = reverse('user-me')
         data = {'username': 'testuser11'}
         response = self.client.put(url, data=data)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=logged_user.pk)
         self.assertEqual('testuser11', user.username)
 
     def test_user_delete(self):
@@ -73,25 +79,27 @@ class UserTestCase(GeneralTestCaseMixin, APITestCase):
 
     def test_user_register(self):
         url = reverse('user-list')
+        account_type = AccountType.objects.all()[0]
         data = {
-            'username': 'john_dow',
+            'username': 'john_dow3',
             'password': 'Qwerty#1234',
             're_password': 'Qwerty#1234',
             'first_name': 'john',
             'last_name': 'dow',
-            'email': 'john.dow@home.local',
-            'account_type': 1,
+            'email': 'john.dow3@home.local',
+            'account_type': account_type.pk,
             'gender': 'M',
         }
         response = self.client.post(url, data=data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(
-            {'id': 2, 'username': 'john_dow', 'first_name': 'john', 'last_name': 'dow', 'email': 'john.dow@home.local'},
+            {'id': response.data.get('id'), 'username': 'john_dow3', 'first_name': 'john', 'last_name': 'dow',
+             'email': 'john.dow3@home.local'},
             response.data
         )
-        user = User.objects.get(pk=2)
-        self.assertEqual('john_dow', user.username)
-        self.assertEqual(1, user.profile.account_type.pk)
+        user = User.objects.get(pk=response.data.get('id'))
+        self.assertEqual('john_dow3', user.username)
+        self.assertEqual(account_type.pk, user.profile.account_type.pk)
         self.assertEqual('M', user.profile.gender)
 
 

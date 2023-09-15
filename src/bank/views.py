@@ -7,14 +7,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from bank.models import Account, Merchant
-from bank.serializers import AccountSerializer, TransferSerializer, TransferHistorySerializer, MerchantSerializer, \
-    PayABillSerializer
+from bank import serializers
 from bank.services.account_service import AccountService
 from bank.services.transfer_history_service import TransferHistoryService
 from bank.tasks import money_transfer_task, pay_a_bill_task
 
 
 class AccountViewSet(viewsets.ViewSet):
+    """
+    Представление отвечающее за банковские аккаунты пользователей.
+    Действия: вывод списка аккаунтов, создание аккаунта, удаление, пополнение счета
+    """
+
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -24,7 +28,7 @@ class AccountViewSet(viewsets.ViewSet):
         return AccountService.get_user_account_by_id(user=self.request.user, pk=pk)
 
     def list(self, request):
-        serializer_data = AccountSerializer(self.get_queryset(), many=True).data
+        serializer_data = serializers.AccountSerializer(self.get_queryset(), many=True).data
         return Response(serializer_data, status=status.HTTP_200_OK)
 
     def create(self, request):
@@ -32,7 +36,7 @@ class AccountViewSet(viewsets.ViewSet):
             'name': AccountService.generate_account_number(user=self.request.user),
             'user': self.request.user.pk
         }
-        serializer = AccountSerializer(data=data)
+        serializer = serializers.AccountSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'result': True}, status=status.HTTP_201_CREATED)
@@ -51,7 +55,7 @@ class AccountViewSet(viewsets.ViewSet):
             data = {
                 'amount': instance.amount + abs(Decimal(request.data.get('amount')))
             }
-            serializer = AccountSerializer(instance, data=data, partial=True)
+            serializer = serializers.AccountSerializer(instance, data=data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response({'result': True}, status=status.HTTP_200_OK)
@@ -60,10 +64,15 @@ class AccountViewSet(viewsets.ViewSet):
 
 
 class TransferAPIView(APIView):
+    """
+    Представление денежных переводов между аккаунтами пользователей.
+    Используется асинхронная celery задача для самого перевода.
+    """
+
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        serializer = TransferSerializer(data=request.data, context={'request': request})
+        serializer = serializers.TransferSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
         # Money transfer task
@@ -77,10 +86,15 @@ class TransferAPIView(APIView):
 
 
 class PayABillAPIView(APIView):
+    """
+    Представление оплаты различных денежных услуг.
+    Используется асинхронная celery задача для самой оплаты.
+    """
+
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        serializer = PayABillSerializer(data=request.data, context={'request': request})
+        serializer = serializers.PayABillSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
         # Pay a bill transfer task
@@ -94,14 +108,22 @@ class PayABillAPIView(APIView):
 
 
 class TransferHistoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    Представление в виде списка транзакций пользователей
+    """
+
     permission_classes = (IsAuthenticated,)
-    serializer_class = TransferHistorySerializer
+    serializer_class = serializers.TransferHistorySerializer
 
     def get_queryset(self):
         return TransferHistoryService.get_all(user=self.request.user)
 
 
 class MerchantViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    Представление в виде списка доступных мерчантов
+    """
+
     permission_classes = (IsAuthenticated,)
-    serializer_class = MerchantSerializer
+    serializer_class = serializers.MerchantSerializer
     queryset = Merchant.objects.all()
