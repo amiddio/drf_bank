@@ -45,7 +45,7 @@ class TransferHistory(models.Model):
         ordering = ['-created']
 
     def __str__(self):
-        return self.pk
+        return str(self.pk)
 
 
 class CommissionIncome(models.Model):
@@ -66,8 +66,7 @@ class CommissionIncome(models.Model):
 
 class Merchant(models.Model):
     """
-    Модель сервисов для оплаты финансовых услуг.
-    Например, комунальных.
+    Модель сервисов для оплаты финансовых услуг, например, комунальных.
     """
 
     name = models.CharField(max_length=50)

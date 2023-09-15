@@ -11,6 +11,7 @@ from bank import serializers
 from bank.services.account_service import AccountService
 from bank.services.transfer_history_service import TransferHistoryService
 from bank.tasks import money_transfer_task, pay_a_bill_task
+from config.paginations import TransferHistoryPagination
 
 
 class AccountViewSet(viewsets.ViewSet):
@@ -114,6 +115,7 @@ class TransferHistoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.TransferHistorySerializer
+    pagination_class = TransferHistoryPagination
 
     def get_queryset(self):
         return TransferHistoryService.get_all(user=self.request.user)

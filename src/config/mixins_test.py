@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.authtoken.models import Token
 
 from account.models import AccountType, Profile
+from bank.models import Merchant
 
 
 class GeneralTestCaseMixin:
@@ -21,6 +22,8 @@ class GeneralTestCaseMixin:
         )
         Profile.objects.create(gender='M', account_type=account_type1, user=user1)
         Profile.objects.create(gender='M', account_type=account_type2, user=user2)
+        Merchant.objects.create(name="Electricity Company", commission='0.50')
+        Merchant.objects.create(name="City GAZ", commission='1')
 
     def setUp(self):
         self.user_login()
